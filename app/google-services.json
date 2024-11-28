@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "919394088139",
+    "project_id": "tiketin-azis",
+    "storage_bucket": "tiketin-azis.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:919394088139:android:efa5a8b81087a9db0c174e",
+        "android_client_info": {
+          "package_name": "com.azis.tiketin"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "919394088139-l13jm26dprd4r1c51s6go02a7tfe9gtc.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.azis.tiketin",
+            "certificate_hash": "56f36665cb5989eb73c5191fd82f2e0c363322d0"
+          }
+        },
+        {
+          "client_id": "919394088139-bdv56091vm70p9ogfb3pohv2mrvnu8r5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBACrW0F9JOTtFmm0u2dPznmErgrBAeSGU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "919394088139-bdv56091vm70p9ogfb3pohv2mrvnu8r5.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

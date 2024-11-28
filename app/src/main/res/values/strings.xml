@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Tiketin</string>
+    <string name="title_activity_home">HomeActivity</string>
+    <string name="title_activity_movie_detail">MovieDetailActivity</string>
+    <string name="title_activity_ticket_order">TicketOrderActivity</string>
+    <string name="title_activity_my_ticket">MyTicketActivity</string>
+    <string name="title_activity_ticket_detail">TicketDetailActivity</string>
+    <string name="default_web_client_id">AIzaSyBACrW0F9JOTtFmm0u2dPznmErgrBAeSGU</string>
+</resources>
