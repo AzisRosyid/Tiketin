@@ -60,6 +60,8 @@ class MapsActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val checkpointStart = intent.getIntExtra("checkpoint_start", 0)
+        val checkpointEnd = intent.getIntExtra("checkpoint_end", 0)
         setContent {
             val checkpoints = remember { mutableStateListOf<Checkpoint>() }
             val coroutineScope = rememberCoroutineScope()
@@ -68,7 +70,7 @@ class MapsActivity : ComponentActivity() {
             LaunchedEffect(Unit) {
                 coroutineScope.launch(Dispatchers.IO) {
                     try {
-                        val response = api.getCheckpoint().awaitResponse()
+                        val response = api.getCheckpoint(checkpointStart,  checkpointEnd).awaitResponse()
                         if (response.isSuccessful) {
                             response.body()?.checkpoints?.let {
                                 checkpoints.addAll(it)
@@ -85,88 +87,76 @@ class MapsActivity : ComponentActivity() {
             MapsScreen(
                 checkpoints = checkpoints,
                 onCheckpointSelected = { checkpoint ->
-                    if (selectedCheckpoints.size < 2) {
-                        selectedCheckpoints.add(LatLng(checkpoint.latitude, checkpoint.longitude))
-                    }
-
-                    if (selectedCheckpoints.size == 2) {
-                        returnSelectedCheckpoints()
-                    }
+                    returnSelectedCheckpoints(checkpoint)
                 }
             )
         }
     }
 
-    private fun returnSelectedCheckpoints() {
-        val resultIntent = Intent().apply {
-            putExtra(
-                "CHECKPOINTS",
-                ArrayList(selectedCheckpoints.map { "${it.latitude},${it.longitude}" })
-            )
-        }
+    private fun returnSelectedCheckpoints(value: Checkpoint) {
+        val resultIntent = Intent().putExtra("checkpoint", value)
         setResult(RESULT_OK, resultIntent)
         finish()
     }
-}
 
-@Composable
-fun MapsScreen(
-    checkpoints: List<Checkpoint>,
-    onCheckpointSelected: (Checkpoint) -> Unit
-) {
-    val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(
-            LatLng(-6.200000, 106.816666), // Jakarta
-            10f
-        )
-    }
+    @Composable
+    fun MapsScreen(
+        checkpoints: List<Checkpoint>,
+        onCheckpointSelected: (Checkpoint) -> Unit
+    ) {
+        val cameraPositionState = rememberCameraPositionState {
+            position = CameraPosition.fromLatLngZoom(
+                LatLng(-6.200000, 106.816666), // Jakarta
+                10f
+            )
+        }
 
-    var selectedCheckpoint by remember { mutableStateOf<Checkpoint?>(null) }
-    var showBottomSheet by remember { mutableStateOf(false) }
+        var selectedCheckpoint by remember { mutableStateOf<Checkpoint?>(null) }
+        var showBottomSheet by remember { mutableStateOf(false) }
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        TopBar(title = "Select Checkpoints", onBackClick = {  })
+        Column(modifier = Modifier.fillMaxSize()) {
+            TopBar(title = "Select Checkpoints", onBackClick = { finish() })
 
-        Box(modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.BottomCenter
-        ) {
-            GoogleMap(
-                modifier = Modifier
-                    .fillMaxSize(),
-                cameraPositionState = cameraPositionState
+            Box(modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.BottomCenter
             ) {
-                // Render markers for all checkpoints
-                checkpoints.forEach { checkpoint ->
-                    Marker(
-                        state = MarkerState(position = LatLng(checkpoint.latitude, checkpoint.longitude)),
-                        title = checkpoint.name,
-                        snippet = checkpoint.description,
-                        onClick = {
-                            selectedCheckpoint = checkpoint
-                            showBottomSheet = true
-                            true
-                        }
+                GoogleMap(
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    cameraPositionState = cameraPositionState
+                ) {
+                    // Render markers for all checkpoints
+                    checkpoints.forEach { checkpoint ->
+                        Marker(
+                            state = MarkerState(position = LatLng(checkpoint.latitude, checkpoint.longitude)),
+                            title = checkpoint.name,
+                            snippet = checkpoint.description,
+                            onClick = {
+                                selectedCheckpoint = checkpoint
+                                showBottomSheet = true
+                                true
+                            }
+                        )
+                    }
+                }
+
+                if (selectedCheckpoint != null) {
+                    CheckpointDetailBottomSheet(
+                        checkpoint = selectedCheckpoint!!,
+                        isVisible = showBottomSheet,
+                        onConfirm = {
+                            onCheckpointSelected(selectedCheckpoint!!)
+                            showBottomSheet = false
+                        },
+                        onDismiss = { showBottomSheet = false }
                     )
                 }
             }
 
-            if (selectedCheckpoint != null) {
-                CheckpointDetailBottomSheet(
-                    checkpoint = selectedCheckpoint!!,
-                    isVisible = showBottomSheet,
-                    onConfirm = {
-                        onCheckpointSelected(selectedCheckpoint!!)
-                        showBottomSheet = false
-                    },
-                    onDismiss = { showBottomSheet = false }
-                )
-            }
+
         }
-
-
     }
 }
-
 
 
 @Composable

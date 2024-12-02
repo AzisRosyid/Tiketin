@@ -19,6 +19,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -72,22 +73,21 @@ class LoginActivity : ComponentActivity() {
             .build()
         googleSignInClient = GoogleSignIn.getClient(this, gso)
 
-        // Google Sign-In result launcher
+        val viewModel =  LoginViewModel()
+
         val signInLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
             try {
                 val account = task.getResult(ApiException::class.java)
-                firebaseAuthWithGoogle(account)
+                firebaseAuthWithGoogle(account, viewModel)
             } catch (e: ApiException) {
                 Log.e("GoogleSignIn", "Sign-in failed: ${e.message}")
             }
         }
 
+
         setContent {
             TiketinTheme {
-
-                val viewModel = remember { LoginViewModel() }
-
                 viewModel.email = "azisrosyid@gmail.com"
                 viewModel.password = "12345678"
 
@@ -98,8 +98,14 @@ class LoginActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    LoginScreen {  val signInIntent = googleSignInClient.signInIntent
-                        signInLauncher.launch(signInIntent) }
+                    LoginScreen(
+                        onGoogleSignInClick = {
+                            viewModel.setLoading(true)
+                            val signInIntent = googleSignInClient.signInIntent
+                            signInLauncher.launch(signInIntent)
+                        },
+                        isLoading = viewModel.isLoading
+                    )
                 }
             }
         }
@@ -117,7 +123,7 @@ class LoginActivity : ComponentActivity() {
     }
 
 
-    private fun firebaseAuthWithGoogle(account: GoogleSignInAccount) {
+    private fun firebaseAuthWithGoogle(account: GoogleSignInAccount, viewModel: LoginViewModel) {
         val credential = GoogleAuthProvider.getCredential(account.idToken, null)
         Helper.firebaseAuth.signInWithCredential(credential)
             .addOnCompleteListener(this) { task ->
@@ -142,10 +148,12 @@ class LoginActivity : ComponentActivity() {
                         }
 
                         override fun onFailure(call: Call<UserModel>, t: Throwable) {
+                            viewModel.setLoading(false) // Hide loading
                             Log.e("onFailure", t.message.toString())
                         }
                     })
                 } else {
+                    viewModel.setLoading(false) // Hide loading
                     Log.e("FirebaseAuth", "Authentication failed: ${task.exception?.message}")
                 }
             }
@@ -190,34 +198,61 @@ class LoginActivity : ComponentActivity() {
 class LoginViewModel {
     var email by mutableStateOf("")
     var password by mutableStateOf("")
+    private val _isLoading = mutableStateOf(false)
+    val isLoading: Boolean get() = _isLoading.value
+
+    fun setLoading(isLoading: Boolean) {
+        _isLoading.value = isLoading
+    }
 }
 
 @Composable
-private fun LoginScreen(onGoogleSignInClick: () -> Unit) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text(
-            text = "Login",
-            style = MaterialTheme.typography.displayMedium,
-            modifier = Modifier.padding(bottom = 42.dp, top = 70.dp)
-        )
-
-        Spacer(modifier = Modifier.weight(1f))
-
-        Button(
-            onClick = onGoogleSignInClick,
-            modifier = Modifier.fillMaxWidth()
+private fun LoginScreen(onGoogleSignInClick: () -> Unit, isLoading: Boolean) {
+    if (isLoading) {
+        LoadingScreen()
+    } else {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            Text("Sign in with Google")
+            Text(
+                text = "Login",
+                style = MaterialTheme.typography.displayMedium,
+                modifier = Modifier.padding(bottom = 42.dp, top = 70.dp)
+            )
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            Button(
+                onClick = onGoogleSignInClick,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Sign in with Google")
+            }
         }
     }
 }
 
+@Composable
+fun LoadingScreen() {
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background
+    ) {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            CircularProgressIndicator()
+            Spacer(modifier = Modifier.padding(16.dp))
+            Text(text = "Loading...", style = MaterialTheme.typography.bodyMedium)
+        }
+    }
+}
 
 @Preview(showBackground = true)
 @Composable
@@ -234,7 +269,6 @@ fun GreetingPreview() {
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background
         ) {
-            LoginScreen { }
         }
     }
 }

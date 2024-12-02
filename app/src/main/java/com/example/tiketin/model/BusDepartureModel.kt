@@ -5,8 +5,8 @@ data class BusDepartureModel(
 )
 
 data class BusDeparture(
-    val checkpoint_end: Checkpoint,
-    val checkpoint_start: Checkpoint,
+    val checkpoint_end: Int,
+    val checkpoint_start: Int,
     val created_at: String,
     val description: String,
     val id: Int,

@@ -2,6 +2,7 @@ package com.example.menuapp.Api
 
 import com.example.tiketin.model.BusDeparture
 import com.example.tiketin.model.BusDepartureModel
+import com.example.tiketin.model.BusScheduleModel
 import com.example.tiketin.model.Checkpoint
 import com.example.tiketin.model.CheckpointModel
 import com.example.tiketin.model.MovieModel
@@ -28,7 +29,16 @@ interface ApiEndPoint {
     fun refresh(): Call<UserModel>
 
     @GET("checkpoint")
-    fun getCheckpoint(): Call<CheckpointModel>
+    fun getCheckpoint(
+        @Query("checkpoint_start") checkpointStart: Int? = null,
+        @Query("checkpoint_end") checkpointEnd: Int? = null
+    ): Call<CheckpointModel>
+
+    @GET("bus/schedule")
+    fun getBusSchedule(
+        @Query("checkpoint_start") checkpointStart: Int? = null,
+        @Query("checkpoint_end") checkpointEnd: Int? = null
+    ): Call<BusScheduleModel>
 
     @GET("bus/departure")
     fun getBusDeparture(): Call<BusDepartureModel>

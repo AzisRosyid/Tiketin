@@ -6,6 +6,7 @@ import android.app.AlertDialog
 import android.content.ContentResolver
 import android.content.ContentUris
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import android.os.Environment
 import android.os.Handler
@@ -44,7 +45,6 @@ object Helper {
     public lateinit var firebaseAuth: FirebaseAuth
     var id: Int = 0
     var token: String = ""
-
 
     val BASE_IMAGE = "http://192.168.21.1/tiketin_api/public/images/"
     val BASE_URL = "http://192.168.21.1/tiketin_api/public/api/"
