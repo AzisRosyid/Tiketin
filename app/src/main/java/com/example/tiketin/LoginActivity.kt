@@ -35,6 +35,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
@@ -58,6 +59,13 @@ import org.json.JSONObject
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+
+import androidx.core.content.ContextCompat
+import androidx.compose.ui.platform.LocalContext
+
 
 class LoginActivity : ComponentActivity() {
     private val api by lazy { ApiRetrofit().apiEndPoint }
@@ -210,7 +218,15 @@ class LoginViewModel {
 }
 
 @Composable
+fun getColorFromResources(colorResId: Int): Color {
+    val context = LocalContext.current
+    val colorInt = ContextCompat.getColor(context, colorResId)
+    return Color(colorInt)
+}
+
+@Composable
 private fun LoginScreen(onGoogleSignInClick: () -> Unit, isLoading: Boolean) {
+    val darkBlue = getColorFromResources(R.color.dark_blue)
     if (isLoading) {
         LoadingScreen()
     } else {
@@ -234,12 +250,14 @@ private fun LoginScreen(onGoogleSignInClick: () -> Unit, isLoading: Boolean) {
             Text(
                 text = "TIKETIN",
                 style = MaterialTheme.typography.displayMedium,
-                modifier = Modifier.padding(bottom = 8.dp)
+                modifier = Modifier.padding(bottom = 8.dp),
+                color = Color(0xFF001146)
             )
             Text(
                 text = "Tiket bus lebih mudah",
                 style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(bottom = 32.dp)
+                modifier = Modifier.padding(bottom = 32.dp),
+                color = Color(0xFF001146)
             )
 
             Spacer(modifier = Modifier.weight(1f))
@@ -247,12 +265,16 @@ private fun LoginScreen(onGoogleSignInClick: () -> Unit, isLoading: Boolean) {
             // Tombol Google dengan ikon
             Button(
                 onClick = onGoogleSignInClick,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = darkBlue // Warna background tombol
+                )
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.google),
                     contentDescription = "Google Icon",
-                    modifier = Modifier .size(24.dp)
+                    modifier = Modifier
+                        .size(24.dp)
                         .padding(end = 8.dp)
                 )
                 Text("Sign in with Google")
