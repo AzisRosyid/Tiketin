@@ -1,5 +1,7 @@
 package com.example.tiketin.model
 
+import java.io.Serializable
+
 data class Bus(
     val capacity: Int,
     val `class`: String,
@@ -9,4 +11,4 @@ data class Bus(
     val name: String,
     val price: Int,
     val updated_at: String
-)
+): Serializable

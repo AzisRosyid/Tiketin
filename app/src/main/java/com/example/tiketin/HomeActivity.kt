@@ -399,8 +399,7 @@ class HomeActivity : ComponentActivity() {
                             }
                             // Bus Schedule Dropdown
                             BusScheduleDropdown(busSchedules = busSchedules) { selectedSchedule ->
-                                // Handle the selected schedule here
-                                println("Selected schedule: ${selectedSchedule.bus.name}")
+                                busSchedule = selectedSchedule
                             }
                             Spacer(modifier = Modifier.height(16.dp))
                             // Buttons

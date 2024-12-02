@@ -116,7 +116,7 @@ class TicketOrderActivity : ComponentActivity() {
             busScheduleModel = showBusSchedule(busSchedule.id)
         }
 
-        LaunchedEffect(viewModel.selectedDate) {
+        LaunchedEffect(busSchedule) {
             getSeat(busSchedule.id, viewModel)?.let {
                 seatModel = it
             }
@@ -261,34 +261,28 @@ class TicketOrderActivity : ComponentActivity() {
     }
 
     private suspend fun getSeat(busScheduleId: Int, viewModel: TicketOrderViewModel): SeatModel? {
+        Helper.message("asdfasdf", this@TicketOrderActivity)
         return try {
-            val selectedTime: Int = try {
-                viewModel.selectedTime.toInt()
-            } catch (e: NumberFormatException) {
-                return null
-            }
-
             val selectedDate: String? = try {
-                SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(
-                    SimpleDateFormat(
-                        Helper.DATE_PATTERN,
-                        Locale.getDefault()
-                    ).parse(viewModel.selectedDate)
-                )
-            } catch (e: java.text.ParseException) {
-                return null
-            }
-
-            if (selectedTime != 0 && selectedDate != null) {
-                val response = api.getSeat(id = selectedTime, date = selectedDate).awaitResponse()
-                if (response.isSuccessful) {
-                    response.body()
-                } else {
-                    null
+                SimpleDateFormat(
+                    Helper.DATE_PATTERN,
+                    Locale.getDefault()
+                ).parse(viewModel.selectedDate)?.let {
+                    SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(
+                        it
+                    )
                 }
+            } catch (e: java.text.ParseException) {
+                null
+            }
+            val response = api.getSeat(id = busScheduleId, date = selectedDate).awaitResponse()
+
+            if (response.isSuccessful) {
+                return response.body()
             } else {
                 null
             }
+
         } catch (e: Exception) {
             null
         }

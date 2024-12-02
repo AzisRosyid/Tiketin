@@ -46,8 +46,8 @@ object Helper {
     var id: Int = 0
     var token: String = ""
 
-    val BASE_IMAGE = "http://192.168.56.1/tiketin_api/public/images/"
-    val BASE_URL = "http://192.168.56.1/tiketin_api/public/api/"
+    val BASE_IMAGE = "http://192.168.21.1/tiketin_api/public/images/"
+    val BASE_URL = "http://192.168.21.1/tiketin_api/public/api/"
     val DATE_PATTERN = "EEEE, dd MMMM yyyy"
     val AUTH_PIN = "\$2y\$10\$"
 

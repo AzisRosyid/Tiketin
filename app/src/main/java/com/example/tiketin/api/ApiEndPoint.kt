@@ -53,7 +53,7 @@ interface ApiEndPoint {
     @GET("bus/seat")
     fun getSeat(
         @Query("bus_schedule_id") id: Int,
-        @Query("screening_date") date: String
+        @Query("screening_date") date: String?
     ): Call<SeatModel>
 
     @POST("order")

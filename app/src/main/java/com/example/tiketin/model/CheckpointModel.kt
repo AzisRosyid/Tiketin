@@ -4,7 +4,7 @@ import java.io.Serializable
 
 data class CheckpointModel(
     val checkpoints: List<Checkpoint>,
-)
+): Serializable
 
 data class Checkpoint(
     val created_at: String,
