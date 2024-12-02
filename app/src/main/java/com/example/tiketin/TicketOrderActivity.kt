@@ -67,7 +67,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.tiketin.api.ApiRetrofit
-import com.example.tiketin.model.Movie
+import com.example.tiketin.model.BusSchedule
+import com.example.tiketin.model.BusScheduleModel
 import com.example.tiketin.model.MovieModel
 import com.example.tiketin.model.OrderModel
 import com.example.tiketin.model.ResponseModel
@@ -106,22 +107,22 @@ class TicketOrderActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     @Composable
     fun TicketOrderScreen() {
-        val movie = remember { getSerializable(this, "movie", Movie::class.java) }
-        var movieModel by remember { mutableStateOf<MovieModel?>(null) }
+        val busSchedule = remember { getSerializable(this, "busSchedule", BusSchedule::class.java) }
+        var busScheduleModel by remember { mutableStateOf<BusScheduleModel?>(null) }
         val viewModel = remember { TicketOrderViewModel() }
         var seatModel by remember { mutableStateOf<SeatModel?>(null) }
 
-        LaunchedEffect(movie) {
-            movieModel = showMovie(movie.id)
+        LaunchedEffect(busSchedule) {
+            busScheduleModel = showBusSchedule(busSchedule.id)
         }
 
-        LaunchedEffect(viewModel.selectedTime, viewModel.selectedDate) {
-            getSeat(viewModel)?.let {
+        LaunchedEffect(viewModel.selectedDate) {
+            getSeat(busSchedule.id, viewModel)?.let {
                 seatModel = it
             }
         }
 
-        movieModel?.let { nonNullMovieModel ->
+        busScheduleModel?.let { nonNullBusScheduleModel ->
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -132,7 +133,7 @@ class TicketOrderActivity : ComponentActivity() {
                         .verticalScroll(rememberScrollState())
                         .padding(vertical = 42.dp)
                 ) {
-                    TicketOrderContent(nonNullMovieModel, seatModel, viewModel)
+                    TicketOrderContent(nonNullBusScheduleModel, seatModel, viewModel)
                 }
 
                 CustomTopBar()
@@ -144,7 +145,8 @@ class TicketOrderActivity : ComponentActivity() {
                         .fillMaxWidth()
                 )
                 {
-                    Text(text = "Grand Total: ${Helper.currencyFormat(viewModel.selectedSeats.count() * movie.price)}")
+                    Text(text = "Grand Total: ${Helper.currencyFormat(viewModel.selectedSeats.count() * busSchedule.bus.price * busSchedule.bus_departure.multiplier)}")
+
 
                     Button(
                         onClick = {
@@ -158,7 +160,7 @@ class TicketOrderActivity : ComponentActivity() {
                 }
             }
         } ?: run {
-            // Show error message if movieModel is null
+            // Show error message if busScheduleModel is null
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -245,9 +247,9 @@ class TicketOrderActivity : ComponentActivity() {
         finish()
     }
 
-    private suspend fun showMovie(id: Int): MovieModel? {
+    private suspend fun showBusSchedule(id: Int): BusScheduleModel? {
         return try {
-            val response = api.showMovie(id = id).awaitResponse()
+            val response = api.showBusSchedule(id = id).awaitResponse()
             if (response.isSuccessful) {
                 response.body()
             } else {
@@ -258,7 +260,7 @@ class TicketOrderActivity : ComponentActivity() {
         }
     }
 
-    private suspend fun getSeat(viewModel: TicketOrderViewModel): SeatModel? {
+    private suspend fun getSeat(busScheduleId: Int, viewModel: TicketOrderViewModel): SeatModel? {
         return try {
             val selectedTime: Int = try {
                 viewModel.selectedTime.toInt()
@@ -311,17 +313,17 @@ class TicketOrderViewModel {
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 private fun TicketOrderContent(
-    movieModel: MovieModel,
+    busScheduleModel: BusScheduleModel,
     seatModel: SeatModel?,
     viewModel: TicketOrderViewModel
 ) {
-    val movie: Movie = movieModel.movie
+    val busSchedule: BusSchedule = busScheduleModel.busSchedule
     // var selectedDate by remember { mutableStateOf(LocalDate.now()) }
 //    viewModel.selectedDate = "Open date picker dialog"
-//    var comboBoxValue by remember { mutableStateOf(movieModel.schedules.firstOrNull()?.let { "${it.start_time} - ${it.end_time}" } ?: "00:00:00 - 00:00:00") }
+//    var comboBoxValue by remember { mutableStateOf(busScheduleModel.schedules.firstOrNull()?.let { "${it.start_time} - ${it.end_time}" } ?: "00:00:00 - 00:00:00") }
     var comboBoxValue by remember { mutableStateOf(viewModel.selectedTime) }
     var isDropdownExpanded by remember { mutableStateOf(false) }
-    val dropdownValues: List<Schedule> = movieModel.schedules
+    val dropdownValues: List<BusSchedule> = busScheduleModel.busSchedules
 
     Column(
         modifier = Modifier
@@ -330,9 +332,9 @@ private fun TicketOrderContent(
     ) {
 
         var model: Any = R.drawable.baseline_movie_24
-        if (!movie.image.isNullOrEmpty()) {
-            model = "${Helper.BASE_IMAGE}${movie.image}"
-        }
+//        if (!busSchedule.bus.isNullOrEmpty()) {
+//            model = "${Helper.BASE_IMAGE}${busSchedule.bus.price}"
+//        }
 
         AsyncImage(
             model = model,
@@ -343,7 +345,7 @@ private fun TicketOrderContent(
         )
 
         Text(
-            text = movie.title,
+            text = busSchedule.description,
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold,
             modifier = Modifier
@@ -351,7 +353,9 @@ private fun TicketOrderContent(
                 .fillMaxWidth()
         )
 
-        TicketOrderRow("Price", Helper.currencyFormat(movie.price))
+        val totalPrice = busSchedule.bus.price * busSchedule.bus_departure.multiplier
+
+        TicketOrderRow("Price", Helper.currencyFormat(totalPrice))
 
         Spacer(modifier = Modifier.height(20.dp))
 
@@ -382,18 +386,18 @@ private fun TicketOrderContent(
                     )
                 }
 
-                ComboBox(
-                    label = "Time",
-                    selectedValue = comboBoxValue,
-                    values = dropdownValues,
-                    onValueChange = {
-                        viewModel.selectedTime = it.id.toString()
-                        comboBoxValue = "${it.start_time} - ${it.end_time}"
-                        viewModel.selectedSeats = setOf()
-                    },
-                    isDropdownExpanded = isDropdownExpanded,
-                    onToggleDropdown = { isDropdownExpanded = !isDropdownExpanded }
-                )
+//                ComboBox(
+//                    label = "Time",
+//                    selectedValue = comboBoxValue,
+//                    values = dropdownValues,
+//                    onValueChange = {
+//                        viewModel.selectedTime = it.id.toString()
+//                        comboBoxValue = "${it.start_time} - ${it.end_time}"
+//                        viewModel.selectedSeats = setOf()
+//                    },
+//                    isDropdownExpanded = isDropdownExpanded,
+//                    onToggleDropdown = { isDropdownExpanded = !isDropdownExpanded }
+//                )
 
                 Column(
                     modifier = Modifier
@@ -505,87 +509,87 @@ fun SeatButton(text: String, seat: Seat, selectedSeats: Set<Seat>, onSeatSelecte
 }
 
 
-@Composable
-fun ComboBox(
-    label: String,
-    selectedValue: String,
-    values: List<Schedule>,
-    onValueChange: (Schedule) -> Unit,
-    isDropdownExpanded: Boolean,
-    onToggleDropdown: () -> Unit
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-    ) {
-        Column {
-            Text(
-                text = label,
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(top = 8.dp)
-            )
-
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color.White)
-                    .border(1.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(4.dp))
-                    .clickable { onToggleDropdown() }
-                    .padding(16.dp)
-            ) {
-                BasicTextField(
-                    value = selectedValue,
-                    onValueChange = {},
-                    keyboardOptions = KeyboardOptions.Default.copy(
-                        imeAction = ImeAction.Done,
-                        keyboardType = KeyboardType.Text
-                    ),
-                    keyboardActions = KeyboardActions(
-                        onDone = {
-                            onToggleDropdown()
-                        }
-                    ),
-                    textStyle = LocalTextStyle.current.copy(color = Color.Black),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { onToggleDropdown() }
-                        .padding(16.dp)
-                )
-
-                if (isDropdownExpanded) {
-                    DropdownMenu(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(Color.White)
-                            .border(
-                                1.dp,
-                                MaterialTheme.colorScheme.primary,
-                                RoundedCornerShape(4.dp)
-                            ),
-                        expanded = true,
-                        onDismissRequest = { onToggleDropdown() }
-                    ) {
-                        values.forEach { value ->
-                            DropdownMenuItem(
-                                text = {
-                                    Text(
-                                        "${value.start_time} - ${value.end_time}",
-                                        color = Color.Black
-                                    )
-                                },
-                                onClick = {
-                                    onValueChange(value)
-                                    onToggleDropdown()
-                                }
-                            )
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
+//@Composable
+//fun ComboBox(
+//    label: String,
+//    selectedValue: String,
+//    values: List<Schedule>,
+//    onValueChange: (Schedule) -> Unit,
+//    isDropdownExpanded: Boolean,
+//    onToggleDropdown: () -> Unit
+//) {
+//    Box(
+//        modifier = Modifier
+//            .fillMaxWidth()
+//    ) {
+//        Column {
+//            Text(
+//                text = label,
+//                style = MaterialTheme.typography.bodyMedium,
+//                modifier = Modifier.padding(top = 8.dp)
+//            )
+//
+//            Box(
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .background(Color.White)
+//                    .border(1.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(4.dp))
+//                    .clickable { onToggleDropdown() }
+//                    .padding(16.dp)
+//            ) {
+//                BasicTextField(
+//                    value = selectedValue,
+//                    onValueChange = {},
+//                    keyboardOptions = KeyboardOptions.Default.copy(
+//                        imeAction = ImeAction.Done,
+//                        keyboardType = KeyboardType.Text
+//                    ),
+//                    keyboardActions = KeyboardActions(
+//                        onDone = {
+//                            onToggleDropdown()
+//                        }
+//                    ),
+//                    textStyle = LocalTextStyle.current.copy(color = Color.Black),
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .clickable { onToggleDropdown() }
+//                        .padding(16.dp)
+//                )
+//
+//                if (isDropdownExpanded) {
+//                    DropdownMenu(
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                            .background(Color.White)
+//                            .border(
+//                                1.dp,
+//                                MaterialTheme.colorScheme.primary,
+//                                RoundedCornerShape(4.dp)
+//                            ),
+//                        expanded = true,
+//                        onDismissRequest = { onToggleDropdown() }
+//                    ) {
+//                        values.forEach { value ->
+//                            DropdownMenuItem(
+//                                text = {
+//                                    Text(
+//                                        "${value.start_time} - ${value.end_time}",
+//                                        color = Color.Black
+//                                    )
+//                                },
+//                                onClick = {
+//                                    onValueChange(value)
+//                                    onToggleDropdown()
+//                                }
+//                            )
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
+//}
+//
 @Composable
 fun MyDatePickerDialog(viewModel: TicketOrderViewModel) {
 

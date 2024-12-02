@@ -2,6 +2,7 @@ package com.example.menuapp.Api
 
 import com.example.tiketin.model.BusDeparture
 import com.example.tiketin.model.BusDepartureModel
+import com.example.tiketin.model.BusSchedule
 import com.example.tiketin.model.BusScheduleModel
 import com.example.tiketin.model.Checkpoint
 import com.example.tiketin.model.CheckpointModel
@@ -46,9 +47,12 @@ interface ApiEndPoint {
     @GET("movie/{id}")
     fun showMovie(@Path("id") id: Int): Call<MovieModel>
 
-    @GET("seat")
+    @GET("bus/schedule/{id}")
+    fun showBusSchedule(@Path("id") id: Int): Call<BusScheduleModel>
+
+    @GET("bus/seat")
     fun getSeat(
-        @Query("movie_schedule_id") id: Int,
+        @Query("bus_schedule_id") id: Int,
         @Query("screening_date") date: String
     ): Call<SeatModel>
 

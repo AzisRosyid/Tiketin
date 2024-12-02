@@ -108,6 +108,7 @@ class HomeActivity : ComponentActivity() {
     private val api by lazy { ApiRetrofit().apiEndPoint }
     private var checkpointStart by mutableStateOf<Checkpoint?>(null)
     private var checkpointEnd by mutableStateOf<Checkpoint?>(null)
+    private var busSchedule by mutableStateOf<BusSchedule?>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -376,11 +377,7 @@ class HomeActivity : ComponentActivity() {
                                     }
                             }
 
-                            // Bus Schedule Dropdown
-                            BusScheduleDropdown(busSchedules = busSchedules) { selectedSchedule ->
-                                // Handle the selected schedule here
-                                println("Selected schedule: ${selectedSchedule.bus.name}")
-                            }
+
 
 
 
@@ -395,41 +392,18 @@ class HomeActivity : ComponentActivity() {
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    text = "Bus Departure",
+                                    text = "Bus Schedule",
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
                             }
-                            Text(
-                                text = "Kamis 22 Nov",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
+                            // Bus Schedule Dropdown
+                            BusScheduleDropdown(busSchedules = busSchedules) { selectedSchedule ->
+                                // Handle the selected schedule here
+                                println("Selected schedule: ${selectedSchedule.bus.name}")
+                            }
                             Spacer(modifier = Modifier.height(16.dp))
                             // Buttons
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Button(
-                                    onClick = { /* TODO: Add action */ },
-                                    shape = RoundedCornerShape(8.dp),
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = MaterialTheme.colorScheme.primary
-                                    )
-                                ) {
-                                    Text("Besok", style = MaterialTheme.typography.bodySmall)
-                                }
-                                Button(
-                                    onClick = { /* TODO: Add action */ },
-                                    shape = RoundedCornerShape(8.dp),
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = MaterialTheme.colorScheme.primary
-                                    )
-                                ) {
-                                    Text("Hari Ini", style = MaterialTheme.typography.bodySmall)
-                                }
-                            }
 
                             Spacer(modifier = Modifier.height(16.dp))
 
@@ -438,6 +412,7 @@ class HomeActivity : ComponentActivity() {
                                 onClick = {
                                     checkpointStart = null
                                     checkpointEnd = null
+                                    busSchedule = null
                                 },
                                 modifier = Modifier.align(Alignment.CenterHorizontally),
                                 shape = RoundedCornerShape(8.dp),
@@ -454,7 +429,13 @@ class HomeActivity : ComponentActivity() {
                     // Search button at the bottom
                     Button(
                         onClick = {
-                            startActivity(Intent(context, TicketOrderActivity::class.java))
+                            if (busSchedule != null) {
+                                val intent = Intent(context, TicketOrderActivity::class.java)
+                                intent.apply {
+                                    intent.putExtra("busSchedule", busSchedule)
+                                }
+                                startActivity(intent)
+                            }
                         },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -496,7 +477,7 @@ class HomeActivity : ComponentActivity() {
                 modifier = Modifier
                     .menuAnchor()
                     .fillMaxWidth(),
-                label = { Text("Bus Departures") },
+                label = { Text("Bus Schedule") },
                 trailingIcon = {
                     ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
                 }
@@ -517,10 +498,10 @@ class HomeActivity : ComponentActivity() {
                         },
                         text = {
                             Column(modifier = Modifier.padding(horizontal = 2.dp, vertical = 4.dp)) {
-                                Text("Bus Name: ${schedule.bus.name}", style = MaterialTheme.typography.bodyMedium)
-                                Text("Class: ${schedule.bus.`class`}", style = MaterialTheme.typography.bodySmall)
+                                Text("Bus Name: ${schedule.bus.name}", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(vertical = 4.dp))
+                                Text("Class: ${schedule.bus.`class`}", style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(vertical = 4.dp))
                                 Text("Departure: Day ${schedule.day}, ${schedule.time}", style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(vertical = 4.dp))
-                                Text("Price: Rp$totalPrice", style = MaterialTheme.typography.bodyMedium)
+                                Text("Price: Rp$totalPrice", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(vertical = 4.dp))
 
                                 HorizontalDivider()
                             }

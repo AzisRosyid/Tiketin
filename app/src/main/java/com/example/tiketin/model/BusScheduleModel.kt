@@ -1,9 +1,12 @@
 package com.example.tiketin.model
 
+import java.io.Serializable
+
 
 data class BusScheduleModel(
-    val busSchedules: List<BusSchedule>
-)
+    val busSchedules: List<BusSchedule>,
+    val busSchedule: BusSchedule,
+): Serializable
 
 data class BusSchedule(
     val bus: Bus,
@@ -14,4 +17,4 @@ data class BusSchedule(
     val id: Int,
     val time: String,
     val updated_at: String
-)
+): Serializable
