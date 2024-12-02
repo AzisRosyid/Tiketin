@@ -7,12 +7,14 @@ import android.util.Patterns
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -34,6 +36,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
@@ -218,23 +221,46 @@ private fun LoginScreen(onGoogleSignInClick: () -> Unit, isLoading: Boolean) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
+            // Gambar bus
+            Image(
+                painter = painterResource(id = R.drawable.bus),
+                contentDescription = "Bus Image",
+                modifier = Modifier
+                    .padding(top = 180.dp)
+                    .padding(bottom = 16.dp)
+                    .fillMaxWidth(0.5f)
+            )
+
             Text(
-                text = "Login",
+                text = "TIKETIN",
                 style = MaterialTheme.typography.displayMedium,
-                modifier = Modifier.padding(bottom = 42.dp, top = 70.dp)
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+            Text(
+                text = "Tiket bus lebih mudah",
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(bottom = 32.dp)
             )
 
             Spacer(modifier = Modifier.weight(1f))
 
+            // Tombol Google dengan ikon
             Button(
                 onClick = onGoogleSignInClick,
                 modifier = Modifier.fillMaxWidth()
             ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.google),
+                    contentDescription = "Google Icon",
+                    modifier = Modifier .size(24.dp)
+                        .padding(end = 8.dp)
+                )
                 Text("Sign in with Google")
             }
         }
     }
 }
+
 
 @Composable
 fun LoadingScreen() {

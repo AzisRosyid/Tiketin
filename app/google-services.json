@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "919394088139-2e2jnnu4ff1tp2k18hkvmsuhd5auakn4.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.azis.tiketin",
+            "certificate_hash": "f690469eeb4d8568b46be9664345b1d806316cb5"
+          }
+        },
+        {
           "client_id": "919394088139-l13jm26dprd4r1c51s6go02a7tfe9gtc.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
