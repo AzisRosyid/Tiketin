@@ -84,17 +84,18 @@ class LoginActivity : ComponentActivity() {
             .build()
         googleSignInClient = GoogleSignIn.getClient(this, gso)
 
-        val viewModel =  LoginViewModel()
+        val viewModel = LoginViewModel()
 
-        val signInLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
-            try {
-                val account = task.getResult(ApiException::class.java)
-                firebaseAuthWithGoogle(account, viewModel)
-            } catch (e: ApiException) {
-                Log.e("GoogleSignIn", "Sign-in failed: ${e.message}")
+        val signInLauncher =
+            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+                val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+                try {
+                    val account = task.getResult(ApiException::class.java)
+                    firebaseAuthWithGoogle(account, viewModel)
+                } catch (e: ApiException) {
+                    Log.e("GoogleSignIn", "Sign-in failed: ${e.message}")
+                }
             }
-        }
 
 
         setContent {
@@ -126,7 +127,8 @@ class LoginActivity : ComponentActivity() {
     @Composable
     fun requestLocationPermission() {
         val context = LocalContext.current
-        val permissionState = rememberPermissionState(android.Manifest.permission.ACCESS_FINE_LOCATION)
+        val permissionState =
+            rememberPermissionState(android.Manifest.permission.ACCESS_FINE_LOCATION)
 
         LaunchedEffect(Unit) {
             permissionState.launchPermissionRequest()
@@ -145,10 +147,17 @@ class LoginActivity : ComponentActivity() {
                         Helper.firebaseAuth.currentUser!!.email!!,
                         Helper.firebaseAuth.currentUser!!.uid,
                     ).enqueue(object : Callback<UserModel> {
-                        override fun onResponse(call: Call<UserModel>, response: Response<UserModel>) {
+                        override fun onResponse(
+                            call: Call<UserModel>,
+                            response: Response<UserModel>
+                        ) {
                             if (!response.isSuccessful) {
                                 val errors = JSONObject(response.errorBody()!!.string())
-                                Helper.message(errors.getString("errors"), this@LoginActivity, false)
+                                Helper.message(
+                                    errors.getString("errors"),
+                                    this@LoginActivity,
+                                    false
+                                )
                             } else {
                                 Helper.id = response.body()!!.user.id
                                 Helper.token = response.body()!!.token
@@ -169,7 +178,6 @@ class LoginActivity : ComponentActivity() {
                 }
             }
     }
-
 
     private fun saveToken(token: String) {
         val sharedPreferences = getSharedPreferences("MyPrefs", MODE_PRIVATE)

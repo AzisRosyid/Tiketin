@@ -41,6 +41,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import com.example.tiketin.api.ApiRetrofit
 import com.example.tiketin.model.Checkpoint
@@ -229,7 +230,7 @@ fun CheckpointDetailBottomSheet(
                         }
                         Button(
                             onClick = onConfirm,
-                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                            colors = ButtonDefaults.buttonColors(containerColor = colorResource(id = R.color.dark_blue))
                         ) {
                             Text("Confirm", color = Color.White)
                         }
@@ -274,7 +275,7 @@ fun TopBar(
             }
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = Color.Black
+            containerColor = colorResource(id = R.color.dark_blue)
         )
     )
 }

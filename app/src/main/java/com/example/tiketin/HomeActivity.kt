@@ -17,18 +17,24 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -52,6 +58,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ShapeDefaults
 import androidx.compose.material3.Surface
@@ -68,12 +75,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -86,6 +95,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
+import coil.compose.rememberImagePainter
 import com.example.tiketin.Helper.firebaseAuth
 import com.example.tiketin.Helper.id
 import com.example.tiketin.Helper.token
@@ -96,6 +106,7 @@ import com.example.tiketin.model.Checkpoint
 import com.example.tiketin.model.Movie
 import com.example.tiketin.model.MovieModel
 import com.example.tiketin.ui.theme.TiketinTheme
+import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.launch
 import retrofit2.Call
@@ -123,10 +134,67 @@ class HomeActivity : ComponentActivity() {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(MaterialTheme.colorScheme.background)
+                        .background(MaterialTheme.colorScheme.surface)
                 ) {
                     BottomNavigationBar(context = this@HomeActivity, viewModel)
                 }
+            }
+        }
+    }
+
+    @Composable
+    private fun CustomTopBar(title: String) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(120.dp) // Adjust the height as needed
+                .background(
+                    color = colorResource(id = R.color.white),
+                    shape = RoundedCornerShape(
+                        bottomStart = 30.dp,
+                        bottomEnd = 30.dp
+                    )
+                )
+                .shadow(
+                    elevation = 8.dp, // Elevasi bayangan hanya di bawah
+                    shape = RoundedCornerShape(
+                        bottomStart = 30.dp,
+                        bottomEnd = 30.dp
+                    ),
+                    clip = false // Tentukan apakah bayangan perlu dipotong berdasarkan bentuk atau tidak
+                )
+                .offset(y = 4.dp), // Bayangan lebih difokuskan di bawah
+            contentAlignment = Alignment.CenterStart // Title aligned to the left
+        ) {
+            // Add the text title
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, top = 16.dp, bottom = 16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Start // Align text to the left without right constraint
+            ) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = colorResource(id = R.color.dark_blue),
+                        fontSize = 24.sp // Increase font size
+                    ),
+                    modifier = Modifier
+                        .padding(start = 16.dp) // Remove the weight and right constraint
+                )
+
+                // Add an image of the bus to the right
+                Image(
+                    painter = painterResource(R.drawable.bus), // Replace with your image resource
+                    contentDescription = "Bus Illustration",
+                    modifier = Modifier
+                        .fillMaxWidth(0.8f) // Adjust width to 80% of the screen
+                        .aspectRatio(16 / 9f) // Maintain aspect ratio
+                        .offset(x = 120.dp, y = 0.dp) // Move element horizontally to the right
+                        .padding(end = 8.dp) // Give a little space from the right edge of the screen
+                )
             }
         }
     }
@@ -287,12 +355,13 @@ class HomeActivity : ComponentActivity() {
         TiketinTheme {
             Surface(
                 modifier = Modifier.fillMaxSize(),
-                color = MaterialTheme.colorScheme.primary // Adjust color as per your theme
+                color = colorResource(id = R.color.white) // Adjust color as per your theme
             ) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(16.dp)
+                        .background(color = colorResource(id = R.color.white)) // Warna dari tema
                 ) {
                     // Main card container
                     Card(
@@ -320,19 +389,19 @@ class HomeActivity : ComponentActivity() {
                                         Icon(
                                             painter = painterResource(R.drawable.ic_home),
                                             contentDescription = "Location icon",
-                                            tint = MaterialTheme.colorScheme.primary
+                                            tint = colorResource(id = R.color.dark_blue)
                                         )
                                         Spacer(modifier = Modifier.width(8.dp))
                                         Text(
                                             text = "From",
                                             style = MaterialTheme.typography.labelSmall,
-                                            color = MaterialTheme.colorScheme.onSurface
+                                            color = colorResource(id = R.color.dark_blue)
                                         )
                                     }
                                     Text(
                                         text = checkpointStart?.name ?: "Select Location",
                                         style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onSurface
+                                        color = colorResource(id = R.color.dark_blue)
                                     )
 
                                     Divider(
@@ -354,19 +423,19 @@ class HomeActivity : ComponentActivity() {
                                 Icon(
                                     painter = painterResource(R.drawable.ic_home),
                                     contentDescription = "Location icon",
-                                    tint = MaterialTheme.colorScheme.primary
+                                    tint = colorResource(id = R.color.dark_blue)
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
                                     text = "To",
                                     style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onSurface
+                                    color = colorResource(id = R.color.dark_blue)
                                 )
                             }
                             Text(
                                 text = checkpointEnd?.name ?: "Select Location",
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurface
+                                color = colorResource(id = R.color.dark_blue)
                             )
                             Divider(
                                 modifier = Modifier
@@ -377,10 +446,6 @@ class HomeActivity : ComponentActivity() {
                                     }
                             }
 
-
-
-
-
                             // Travel date
                             Row(
                                 verticalAlignment = Alignment.CenterVertically
@@ -388,13 +453,13 @@ class HomeActivity : ComponentActivity() {
                                 Icon(
                                     painter = painterResource(R.drawable.ic_map),
                                     contentDescription = "Calendar icon",
-                                    tint = MaterialTheme.colorScheme.primary
+                                    tint = colorResource(id = R.color.dark_blue)
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
                                     text = "Bus Schedule",
                                     style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onSurface
+                                    color = colorResource(id = R.color.dark_blue)
                                 )
                             }
                             // Bus Schedule Dropdown
@@ -416,7 +481,7 @@ class HomeActivity : ComponentActivity() {
                                 modifier = Modifier.align(Alignment.CenterHorizontally),
                                 shape = RoundedCornerShape(8.dp),
                                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.secondary
+                                    containerColor = colorResource(id = R.color.dark_blue)
                                 )
                             ) {
                                 Text("Clear", style = MaterialTheme.typography.bodyMedium)
@@ -442,7 +507,7 @@ class HomeActivity : ComponentActivity() {
                             .align(Alignment.BottomCenter),
                         shape = RoundedCornerShape(50),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = Color.Black
+                            containerColor = colorResource(id = R.color.dark_blue)
                         )
                     ) {
                         Icon(
@@ -476,7 +541,7 @@ class HomeActivity : ComponentActivity() {
                 modifier = Modifier
                     .menuAnchor()
                     .fillMaxWidth(),
-                label = { Text("Bus Schedule") },
+                label = { Text("Bus Schedule", color = colorResource(id = R.color.dark_blue)) }, // Dark blue label
                 trailingIcon = {
                     ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
                 }
@@ -497,10 +562,30 @@ class HomeActivity : ComponentActivity() {
                         },
                         text = {
                             Column(modifier = Modifier.padding(horizontal = 2.dp, vertical = 4.dp)) {
-                                Text("Bus Name: ${schedule.bus.name}", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(vertical = 4.dp))
-                                Text("Class: ${schedule.bus.`class`}", style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(vertical = 4.dp))
-                                Text("Departure: Day ${schedule.day}, ${schedule.time}", style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(vertical = 4.dp))
-                                Text("Price: Rp$totalPrice", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(vertical = 4.dp))
+                                Text(
+                                    "Bus Name: ${schedule.bus.name}",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    modifier = Modifier.padding(vertical = 4.dp),
+                                    color = colorResource(id = R.color.dark_blue) // Dark blue text
+                                )
+                                Text(
+                                    "Class: ${schedule.bus.`class`}",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    modifier = Modifier.padding(vertical = 4.dp),
+                                    color = colorResource(id = R.color.dark_blue) // Dark blue text
+                                )
+                                Text(
+                                    "Departure: Day ${schedule.day}, ${schedule.time}",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    modifier = Modifier.padding(vertical = 4.dp),
+                                    color = colorResource(id = R.color.dark_blue) // Dark blue text
+                                )
+                                Text(
+                                    "Price: Rp$totalPrice",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    modifier = Modifier.padding(vertical = 4.dp),
+                                    color = colorResource(id = R.color.dark_blue) // Dark blue text
+                                )
 
                                 HorizontalDivider()
                             }
@@ -510,6 +595,7 @@ class HomeActivity : ComponentActivity() {
             }
         }
     }
+
 
 
     fun logout(context: Context) {
@@ -528,44 +614,97 @@ class HomeActivity : ComponentActivity() {
 
     @Composable
     fun ProfileScreen(navController: NavController, context: Context) {
+        // Ambil data pengguna dari Google Sign-In atau Firebase
+        val googleSignInAccount = GoogleSignIn.getLastSignedInAccount(context)
+
+        // Jika akun Google ada, ambil nama dan foto profil
+        val userName = googleSignInAccount?.displayName ?: "Guest"
+        val userProfilePic = googleSignInAccount?.photoUrl
+
         TiketinTheme {
             Surface(
                 modifier = Modifier.fillMaxSize(),
                 color = MaterialTheme.colorScheme.background
             ) {
-                Column(
+                // Box utama yang membungkus seluruh elemen
+                Box(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .padding(15.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                )  {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(200.dp)
-                            .padding(horizontal = 15.dp, vertical = 10.dp)
-                            .clip(MaterialTheme.shapes.large)
-                    ) {
-                        Image(
-                            painter = painterResource(R.drawable.ic_profile),
-                            contentDescription = "profile_screen_bg",
-                            contentScale = ContentScale.Crop
+                        .fillMaxWidth() // Menyesuaikan lebar Box dengan lebar layar
+                        .wrapContentHeight() // Mengatur tinggi Box sesuai isi
+                        .padding(top = 50.dp, bottom = 50.dp, start = 30.dp, end = 30.dp)
+                        .background(
+                            color = colorResource(id = R.color.dark_blue),
+                            shape = RoundedCornerShape(30.dp) // Membuat sudut melengkung
                         )
-                    }
-                    Text(
-                        "Profile Screen",
-                        style = MaterialTheme.typography.titleLarge,
-                        modifier = Modifier.padding(vertical = 20.dp)
-                    )
-
-                    Button(
-                        onClick = {
-                            logout(context = context)
-                        },
-                        modifier = Modifier.fillMaxWidth()
+                ) {
+                    // Konten utama dalam Column agar rapi
+                    Column(
+                        modifier = Modifier
+                            .align(Alignment.Center) // Membuat kolom berada di tengah
+                            .wrapContentSize()
+                            .padding(top = 50.dp, bottom = 30.dp), // Menyesuaikan ukuran Column dengan kontennya
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
                     ) {
-                        Text("Logout")
+                        // Box untuk gambar profil dengan warna dark blue
+                        Box(
+                            modifier = Modifier
+                                .size(120.dp) // Menyesuaikan ukuran gambar
+                                .padding(10.dp)
+                                .clip(CircleShape) // Mengubah gambar menjadi lingkaran
+                                .background(color = colorResource(id = R.color.dark_blue)) // Box berwarna dark blue
+                                .shadow(8.dp, shape = CircleShape) // Bayangan untuk lingkaran
+                        ) {
+                            if (userProfilePic != null) {
+                                // Gunakan gambar profil dari Google Sign-In
+                                Image(
+                                    painter = rememberImagePainter(userProfilePic),
+                                    contentDescription = "Profile Picture",
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier.fillMaxSize()
+                                )
+                            } else {
+                                // Gunakan gambar default jika tidak ada gambar profil
+                                Image(
+                                    painter = painterResource(R.drawable.ic_profile),
+                                    contentDescription = "profile_screen_bg",
+                                    contentScale = ContentScale.Crop
+                                )
+                            }
+                        }
+
+                        // Nama pengguna dengan teks putih
+                        Text(
+                            text = "$userName",
+                            style = MaterialTheme.typography.titleLarge.copy(
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 24.sp,
+                                color = Color.White // Warna teks putih
+                            ),
+                            modifier = Modifier.padding(vertical = 20.dp)
+                        )
+
+                        // Tombol Logout
+                        Button(
+                            onClick = {
+                                logout(context = context)
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 15.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color.White, // Ubah warna tombol menjadi putih
+                                contentColor = colorResource(id = R.color.dark_blue) // Ubah warna teks menjadi biru
+                            )
+                        ) {
+                            Text(
+                                text = "Logout",
+                                style = MaterialTheme.typography.bodyLarge.copy(
+                                    color = colorResource(id = R.color.dark_blue) // Warna teks biru
+                                )
+                            )
+                        }
+
                     }
                 }
             }
@@ -580,6 +719,9 @@ class HomeActivity : ComponentActivity() {
         val titles = listOf("Home", "My Order", "Profile")
         var currentTitle by remember { mutableStateOf(titles[0]) }
 
+        // Access the darkBlue color from the theme or resources
+        val darkBlue = colorResource(id = R.color.dark_blue)
+
         Scaffold(
             modifier = Modifier.fillMaxSize(),
             topBar = { CustomTopBar(title = currentTitle) },
@@ -588,11 +730,17 @@ class HomeActivity : ComponentActivity() {
                     BottomNavigationItem().bottomNavigationItems().forEachIndexed { index, navigationItem ->
                         NavigationBarItem(
                             selected = index == navigationSelectedItem,
-                            label = { Text(navigationItem.label) },
+                            label = {
+                                Text(
+                                    text = navigationItem.label,
+                                    color = if (index == navigationSelectedItem) darkBlue else Color.Gray
+                                )
+                            },
                             icon = {
                                 Icon(
-                                    navigationItem.icon,
-                                    contentDescription = navigationItem.label
+                                    imageVector = navigationItem.icon,
+                                    contentDescription = navigationItem.label,
+                                    tint = if (index == navigationSelectedItem) darkBlue else Color.Gray
                                 )
                             },
                             onClick = {
@@ -605,7 +753,13 @@ class HomeActivity : ComponentActivity() {
                                     launchSingleTop = true
                                     restoreState = true
                                 }
-                            }
+                            },
+                            colors = NavigationBarItemDefaults.colors(
+                                selectedIconColor = darkBlue,
+                                selectedTextColor = darkBlue,
+                                unselectedIconColor = Color.Gray,
+                                unselectedTextColor = Color.Gray
+                            )
                         )
                     }
                 }
